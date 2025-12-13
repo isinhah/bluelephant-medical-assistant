@@ -2,6 +2,7 @@
 python-dotenv
 requests
 pytz
+numpy
 
 # LLM / Gemini API
 google-genai
@@ -10,3 +11,6 @@ google-genai
 google-api-python-client
 google-auth
 google-auth-oauthlib
+
+# Vector Store
+faiss-cpu

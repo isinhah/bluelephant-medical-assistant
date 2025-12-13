@@ -4,9 +4,7 @@ if __name__ == "__main__":
     agent = Agent()
 
     questions = [
-        "Quais consultas tenho esta semana?",
-        "Quero saber minhas consultas de janeiro a dezembro",
-        "Quero minhas consultas de 09:00 até 12:00 de 15/12"
+        "Quais consultas tenho esta semana?"
     ]
 
     for question in questions:

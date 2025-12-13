@@ -10,8 +10,8 @@ class PatientService:
 
         user = response.json()['results'][0]
 
-        return [{
+        return {
             "name": f"{user['name']['first']} {user['name']['last']}",
             "email": user["email"],
             "phone": user["phone"]
-        }]
+        }
