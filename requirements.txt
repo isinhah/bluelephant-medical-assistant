@@ -1,0 +1,12 @@
+# Configuração de Ambiente
+python-dotenv
+requests
+pytz
+
+# LLM / Gemini API
+google-genai
+
+# Google Calendar API
+google-api-python-client
+google-auth
+google-auth-oauthlib
