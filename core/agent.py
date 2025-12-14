@@ -1,6 +1,6 @@
-from services import FeedbackService, LLMService, CalendarService, PatientService, PatientServiceError, ApplicationError
+from services import FeedbackService, LLMService, CalendarService, PatientService
 from utils.calendar_formatter import format_event_time
-from services import FeedbackValidationError, LLMServiceError
+from services.exceptions import FeedbackValidationError, LLMServiceError, PatientServiceError, ApplicationError
 
 from vectorstore.faiss_store import VectorStore
 
@@ -23,63 +23,58 @@ class Agent:
                 "Oi! Como posso te ajudar?\n\n"
                 "Você pode me perguntar sobre suas consultas ou eventos, por exemplo:\n"
                 "- Quais consultas tenho hoje?\n"
+                "- Quais consultas tenho amanhã?\n"
                 "- Quais consultas tenho esta semana?\n"
-                "- Quais consultas tenho no mês?"
+                "- Quais consultas tenho este mês?"
             )
 
         try:
             result = self.llm_service.classify_schedule_period(question)
-            intent = result["periodo"]
-            motivo = result["motivo"]
+            intent = result.get("periodo", "desconhecido").lower()
+            motivo = result.get("motivo", "")
 
-            if intent == "semana":
+            if intent in ["mês", "mes"]:
+                intent = "mes"
+            elif intent in ["amanhã", "amanha"]:
+                intent = "amanha"
+            elif intent not in ["hoje", "amanha", "semana", "mes"]:
+                intent = "desconhecido"
+
+            if intent == "hoje":
+                events = self.calendar_service.events_today()
+            elif intent == "amanha":
+                events = self.calendar_service.events_tomorrow()
+            elif intent == "semana":
                 events = self.calendar_service.events_this_week()
             elif intent == "mes":
                 events = self.calendar_service.events_this_month()
-            elif intent == "hoje":
-                events = self.calendar_service.events_today()
             else:
                 return (
                     "Desculpe, não consegui entender. "
                     f"{motivo}. "
-                    "Você pode informar se deseja as consultas de hoje, desta semana ou deste mês?"
+                    "Você pode informar se deseja as consultas de hoje, amanhã, desta semana ou deste mês?"
                 )
 
             if not events:
                 return self._no_events_message(intent)
 
-            patients = [
-                self.patient_service.get_fake_patient_data()
-                for _ in events
-            ]
+            patients = [self.patient_service.get_fake_patient_data() for _ in events]
 
             return self.format(events, patients)
 
-        except LLMServiceError:
-            return (
-                "Não consegui entender sua solicitação agora. "
-                "Você pode tentar reformular a pergunta?"
-            )
 
+        except LLMServiceError as e:
+            msg = str(e).lower()
+            if "api key" in msg or "quota" in msg:
+                return "Erro: sua API Key está inválida ou acabou o limite de requisições."
+            return "Não consegui entender sua solicitação agora. Tente reformular a pergunta."
         except PatientServiceError:
-            return (
-            "Não foi possível obter os dados do paciente no momento. "
-            "Tente novamente mais tarde."
-        )
+            return "Não foi possível obter os dados do paciente no momento. Tente novamente mais tarde."
 
     def _no_events_message(self, intent: str) -> str:
-        period_map = {
-            "hoje": "hoje",
-            "semana": "esta semana",
-            "mes": "este mês"
-        }
-
+        period_map = {"hoje": "hoje", "semana": "esta semana", "mes": "este mês"}
         periodo_texto = period_map.get(intent, "o período informado")
-
-        return (
-            f"Não encontrei consultas para {periodo_texto}. "
-            "Deseja verificar outro período ou uma data diferente?"
-        )
+        return f"Não encontrei consultas para {periodo_texto}. Deseja verificar outro período ou uma data diferente?"
 
     def receive_feedback(self, feedback: str):
         try:

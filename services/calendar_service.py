@@ -1,5 +1,6 @@
-import datetime, pytz
+import datetime
 import os
+import pytz
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -36,11 +37,25 @@ class CalendarService:
         # Cria o serviço de API
         return build('calendar', 'v3', credentials=user_credentials)
 
-    # Leitura de Eventos
+    # =========================
+    # LEITURA DE EVENTOS
+    # =========================
     def events_today(self):
         today = datetime.datetime.now(pytz.UTC)
         start = datetime.datetime.combine(today.date(), datetime.time(0, 0, 0, 0, tzinfo=today.tzinfo))
         end = datetime.datetime.combine(today.date(), datetime.time(23, 59, 59, 0, tzinfo=today.tzinfo))
+        return self._get_events(start, end)
+
+    def events_tomorrow(self):
+        import datetime
+        import pytz
+
+        today = datetime.datetime.now(pytz.UTC)
+        tomorrow_date = today.date() + datetime.timedelta(days=1)
+
+        start = datetime.datetime.combine(tomorrow_date, datetime.time(0, 0, 0, 0, tzinfo=today.tzinfo))
+        end = datetime.datetime.combine(tomorrow_date, datetime.time(23, 59, 59, 0, tzinfo=today.tzinfo))
+
         return self._get_events(start, end)
 
     def events_this_week(self):

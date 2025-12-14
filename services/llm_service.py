@@ -1,46 +1,105 @@
+import json
 import os
+from typing import Dict, Any
+
+import regex
 from dotenv import load_dotenv
 from google import genai
+
+from services import FeedbackService
+from services.exceptions import LLMServiceError
 
 load_dotenv()
 
 class LLMService:
+    def __init__(self, feedback_service: FeedbackService):
+        self.feedback_service = feedback_service
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            raise LLMServiceError("API Key do Gemini não configurada.")
+        self.client = genai.Client(api_key=api_key)
 
-    def __init__(self):
-        self.client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-
-    def classify_schedule_period(self, question: str) -> str:
-        """
-        Classifica a pergunta do usuário em 'semana', 'mes' ou 'hoje', incluindo horários.
-        Retorna 'desconhecido' se não for possível identificar.
-        """
+    def classify_schedule_period(self, question: str) -> Dict[str, Any]:
+        if not question or not question.strip():
+            raise LLMServiceError("Pergunta do usuário vazia.")
 
         prompt = f"""
-        Você é um assistente médico virtual. 
-        Classifique a pergunta do usuário em um destes períodos: semana, mes ou hoje.
-        Responda apenas com uma palavra: 'semana', 'mes' ou 'hoje'.
 
-        Exemplos:
-        - "Quais consultas tenho esta semana?" -> semana
-        - "Quais consultas tenho hoje?" -> hoje
-        - "Quero saber minhas consultas de janeiro a dezembro" -> mes
-        - "Liste minhas consultas de 1 a 7 de março" -> semana
-        - "Quero minhas consultas de 09:00 até 12:00 de 15/12" -> hoje
-        - "Quero minhas consultas de 14:00 até 16:00 de 20/12" -> hoje
+                ---
+                Você é um assistente médico. Sua tarefa é identificar o período solicitado pelo usuário.
 
-        Observação: se o usuário informar horários, é necessário que o dia seja citado. Se não houver dia, retorne 'desconhecido'.
+                Retorne SOMENTE o JSON no formato:
+                {{
+                  "periodo": "hoje" | "amanha" | "semana" | "mes" | "desconhecido",
+                  "motivo": "explique brevemente se for desconhecido"
+                }}
 
-        Pergunta: "{question}"
-        """
+                Regras:
+                - Se o usuário mencionar horários, o dia deve ser informado.
+                - "hoje" para qualquer menção de data específica de hoje.
+                - "amanha" para qualquer menção a "amanhã", "amanha", "dia seguinte".
+                - "semana" para qualquer menção de intervalo de 7 dias ou "esta semana", "próxima semana".
+                - "mes" para qualquer menção do mês atual.
 
-        response = self.client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt
-        )
+                Exemplos:
+                
+                Usuário: "Quais consultas tenho hoje?"
+                Resposta: {{ "periodo": "hoje", "motivo": "" }}
+                
+                Usuário: "Quais consultas tenho amanhã?"
+                Resposta: {{ "periodo": "amanha", "motivo": "" }}
 
-        schedule_period = response.text.strip().lower()
+                Usuário: "Quais consultas tenho esta semana?"
+                Resposta: {{ "periodo": "semana", "motivo": "" }}
 
-        if schedule_period not in ["semana", "mes", "hoje"]:
-            return "desconhecido"
+                Usuário: "Quais consultas tenho este mês?"
+                Resposta: {{ "periodo": "mes", "motivo": "" }}
 
-        return schedule_period
+                Pergunta do usuário: "{question}"
+                """
+
+        try:
+            response = self.client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt
+            )
+        except Exception as e:
+            raise LLMServiceError(
+                "Erro ao consultar o modelo de linguagem."
+            ) from e
+
+        try:
+            data = self._extract_json(response.text)
+        except LLMServiceError:
+            raise
+        except Exception as e:
+            raise LLMServiceError(
+                "Falha inesperada ao processar resposta do modelo."
+            ) from e
+
+        if "periodo" not in data:
+            raise LLMServiceError(
+                "Resposta da LLM não contém o campo 'periodo'."
+            )
+
+        return {
+            "periodo": data.get("periodo", "desconhecido"),
+            "motivo": data.get("motivo", "")
+        }
+
+    def _extract_json(self, text: str) -> Dict[str, Any]:
+        try:
+            match = regex.search(r"\{(?:[^{}]|(?R))*\}", text)
+            if not match:
+                raise LLMServiceError("Resposta do modelo não contém um JSON válido.")
+            data = json.loads(match.group())
+
+            periodo = data.get("periodo", "desconhecido").lower()
+            if periodo in ["mês", "mes"]:
+                data["periodo"] = "mes"
+            elif periodo not in ["hoje", "amanha", "semana", "mes"]:
+                data["periodo"] = "desconhecido"
+
+            return data
+        except json.JSONDecodeError as e:
+            raise LLMServiceError("Erro ao interpretar o JSON retornado pelo modelo.") from e
