@@ -48,19 +48,48 @@ A interface foi desenvolvida com **Streamlit** e possui **duas áreas** para com
   - regex – processamento avançado de texto 
   - numpy – suporte a operações numéricas
 
-## ⚒️ Instalação e Execução
-```bash
-# 1 - Clone o repositório
-git clone https://github.com/isinhah/bluelephant-medical-assistant
-cd bluelephant-medical-assistant
+## ⚒️ Configuração
 
-# 2 - Instale as dependências do projeto
+**Pré-requisitos**:
+
+- Configuração da API do Google Calendar: É necessário criar suas próprias **credenciais** do Google Calendar.
+  1. Clone o repositório do projeto (passo necessário para ter a pasta `services/`):
+     ```bash
+     git clone https://github.com/isinhah/bluelephant-medical-assistant
+     cd bluelephant-medical-assistant
+      ```
+  2. Acesse o [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+  3. Crie um OAuth 2.0 Client ID do tipo "Aplicativo da Web"  
+     <img src="assets/calendar_credentials.png" alt="Credenciais do Google Calendar" width="400px"><br>
+     <img src="assets/calendar_web_creds.png" alt="Credenciais Web App" width="400px"> 
+  4. Baixe o arquivo `credentials.json`
+  5. Coloque o arquivo `credentials.json` na pasta `services` do projeto.
+
+
+- Configuração da API do Google Gemini: É necessário criar sua própria API Key para acessar a LLM do Google Gemini.
+  1. Crie um arquivo `.env` na **raiz** do projeto:
+        ```bash
+          touch .env
+        ```
+  2. Acesse o [AI Studio Google](https://aistudio.google.com/api-keys?hl=pt-br)
+  3. Crie uma API Key
+  4. Copie a API Key
+  5. Cole a API Key dentro da variável GEMINI_API_KEY no arquivo `.env`:
+        ```text
+          GEMINI_API_KEY=sua_chave_aqui
+        ```
+
+## ⚒️ Instalação e Execução
+Após ter seguido as etapas acima (Google Calendar + API Key do Gemini):
+
+```bash
+# 1 - Instale as dependências do projeto.
 pip install -r requirements.txt
 
-# 3 - Execute o script principal
+# 2 - Execute o script principal. Não use CTRL + C para copiar o link de autenticação.
 python run_app.py
 
-# 4 - Para encerrar a aplicação, pressione CTRL + C no terminal
+# 3 - Para encerrar a aplicação, pressione CTRL + C no terminal.
 ```
 
 ## 📦 Execução com Docker

@@ -1,7 +1,10 @@
 import subprocess
 
+from dotenv import load_dotenv
+
 from services.calendar_service import CalendarService
 
+load_dotenv()
 
 def check_requirements():
     try:
