@@ -1,7 +1,8 @@
 import datetime
 import os
-import pytz
+import shutil
 
+import pytz
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -12,30 +13,50 @@ GOOGLE_CALENDAR_SCOPE = ['https://www.googleapis.com/auth/calendar']
 class CalendarService:
     def __init__(self):
         """Inicializa o serviço de calendário e autentica o usuário."""
-
         self.service = self._authenticate()
 
     def _authenticate(self):
-        """Autentica o usuário e cria o serviço de calendário."""
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        TOKEN_PATH = os.path.join(BASE_DIR, 'token.json')
+        CREDENTIALS_PATH = os.path.join(BASE_DIR, "credentials.json")
 
         user_credentials = None
-        if os.path.exists('services/token.json'):
-            user_credentials = Credentials.from_authorized_user_file('services/token.json', GOOGLE_CALENDAR_SCOPE)
 
-        # Se as credenciais não são válidas ou estão expiradas
+        os.makedirs(BASE_DIR, exist_ok=True)
+
+        if os.path.exists(TOKEN_PATH) and os.path.isdir(TOKEN_PATH):
+            print(f"⚠️ '{TOKEN_PATH}' é um diretório inválido. Removendo automaticamente...")
+            shutil.rmtree(TOKEN_PATH)
+
+        if os.path.isfile(TOKEN_PATH):
+            try:
+                user_credentials = Credentials.from_authorized_user_file(
+                    TOKEN_PATH,
+                    GOOGLE_CALENDAR_SCOPE
+                )
+            except Exception:
+                print("⚠️ Token existente inválido ou corrompido. Recriando...")
+                user_credentials = None
+
         if not user_credentials or not user_credentials.valid:
             if user_credentials and user_credentials.expired and user_credentials.refresh_token:
                 user_credentials.refresh(Request())
             else:
-                flow = InstalledAppFlow.from_client_secrets_file('services/credentials.json', GOOGLE_CALENDAR_SCOPE)
-                user_credentials = flow.run_local_server(port=0)
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    CREDENTIALS_PATH,
+                    GOOGLE_CALENDAR_SCOPE
+                )
 
-            # Salva as credenciais
-            with open('services/token.json', 'w') as token:
+                print("🔐  É necessária uma autenticação inicial. \nClique no link abaixo para conceder acesso ao Google Calendar da sua conta:")
+                user_credentials = flow.run_local_server(
+                    port=0,
+                    open_browser=False
+                )
+
+            with open(TOKEN_PATH, "w", encoding="utf-8") as token:
                 token.write(user_credentials.to_json())
 
-        # Cria o serviço de API
-        return build('calendar', 'v3', credentials=user_credentials)
+        return build("calendar", "v3", credentials=user_credentials)
 
     # =========================
     # LEITURA DE EVENTOS

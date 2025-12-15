@@ -18,7 +18,7 @@ class App:
         st.caption(
             "💡 Exemplos de perguntas que você pode fazer:\n"
             "- Quais consultas tenho hoje?\n"
-            "- Quais consultas tenho amanhã?"
+            "- Quais consultas tenho amanhã?\n"
             "- Quais consultas tenho esta semana?\n"
             "- Quais consultas tenho este mês?\n"
         )

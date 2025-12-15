@@ -3,6 +3,7 @@ python-dotenv
 requests
 pytz
 numpy
+regex
 
 # LLM / Gemini API
 google-genai
