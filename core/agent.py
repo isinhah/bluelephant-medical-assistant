@@ -4,6 +4,9 @@ from services.exceptions import FeedbackValidationError, LLMServiceError, Patien
 
 from vectorstore.faiss_store import VectorStore
 
+# =========================
+# AGENT - CHATBOT DA AGENDA MÉDICA
+# =========================
 class Agent:
     def __init__(self):
         self.feedback_service = FeedbackService()

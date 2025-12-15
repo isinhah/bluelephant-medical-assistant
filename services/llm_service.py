@@ -19,6 +19,9 @@ class LLMService:
             raise LLMServiceError("API Key do Gemini não configurada.")
         self.client = genai.Client(api_key=api_key)
 
+    # =========================
+    # CLASSIFICAÇÃO DO PERÍODO DA AGENDA
+    # =========================
     def classify_schedule_period(self, question: str) -> Dict[str, Any]:
         if not question or not question.strip():
             raise LLMServiceError("Pergunta do usuário vazia.")

@@ -15,6 +15,9 @@ class CalendarService:
         """Inicializa o serviço de calendário e autentica o usuário."""
         self.service = self._authenticate()
 
+    # =========================
+    # AUTENTICAÇÃO COM O GOOGLE CALENDAR
+    # =========================
     def _authenticate(self):
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 

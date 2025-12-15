@@ -80,7 +80,6 @@ python run_app.py
   - Quais consultas tenho esta semana?
   - Quais consultas tenho este mês?
 
-
 - Respostas do Chatbot
   ```text
   Encontrei estas consultas para você:

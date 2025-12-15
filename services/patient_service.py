@@ -1,5 +1,8 @@
 import requests
 
+# =========================
+# SERVIÇO DE PACIENTES FICTÍCIOS
+# =========================
 class PatientService:
 
     BASE_URL = 'https://randomuser.me/api/'
