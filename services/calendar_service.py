@@ -17,15 +17,17 @@ class CalendarService:
 
     def _authenticate(self):
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-        TOKEN_PATH = os.path.join(BASE_DIR, 'token.json')
+
+        AUTH_DIR = os.path.join(BASE_DIR, "..", "auth")
+        TOKEN_PATH = os.path.join(AUTH_DIR, "token.json")
+
         CREDENTIALS_PATH = os.path.join(BASE_DIR, "credentials.json")
 
         user_credentials = None
 
-        os.makedirs(BASE_DIR, exist_ok=True)
+        os.makedirs(AUTH_DIR, exist_ok=True)
 
         if os.path.exists(TOKEN_PATH) and os.path.isdir(TOKEN_PATH):
-            print(f"⚠️ '{TOKEN_PATH}' é um diretório inválido. Removendo automaticamente...")
             shutil.rmtree(TOKEN_PATH)
 
         if os.path.isfile(TOKEN_PATH):

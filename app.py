@@ -3,10 +3,13 @@ import streamlit as st
 from core.agent import Agent
 from services import PatientService
 
+@st.cache_resource
+def get_agent():
+    return Agent()
 
 class App:
     def __init__(self):
-        self.agent = Agent()
+        self.agent = get_agent()
         self.feedback_service = self.agent.feedback_service
         self.patient_service = PatientService()
 
