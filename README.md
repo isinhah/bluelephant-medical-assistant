@@ -1,12 +1,7 @@
 # 🦾 Assistente Inteligente de Agenda Médica
-<sub><i>
-🐘 Teste técnico para BlueElephant<br>
-• pauloestrella1994@gmail.com<br>
-• elefanteartificial@gmail.com
-</i></sub>
 
 ## 📄 Descrição do Projeto
-Este projeto consiste em um **Chatbot inteligente** para auxiliar **médicos** e **clínicas** em consultar rapidamente suas **agendas**. A aplicação utiliza Inteligência Artificial com LLM do **Google Gemini**, integrando-se diretamente ao **Google Calendar API** da conta fornecida para interpretar perguntas e recuperar os eventos correspondentes.
+Este projeto consiste em um **chatbot inteligente** para auxiliar **médicos** e **clínicas** em consultar rapidamente suas **agendas**. A aplicação utiliza Inteligência Artificial com LLM do **Google Gemini**, integrando-se diretamente ao **Google Calendar API** da conta fornecida para interpretar perguntas e recuperar os eventos correspondentes.
 
 Para evitar o uso de dados reais, o sistema retorna dados fictícios de pacientes associados a cada evento, utilizando o **Random User Generator API** para a geração dessas informações.
 
@@ -59,11 +54,12 @@ A interface foi desenvolvida com **Streamlit** e possui **duas áreas** para com
      cd bluelephant-medical-assistant
       ```
   2. Acesse o [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
-  3. Crie um OAuth 2.0 Client ID do tipo "Aplicativo da Web"  
+  3. Habilitar o *Google Calendar API* na seção `APIs e serviços ativados` do [Google Cloud Console](https://console.cloud.google.com/apis)
+  4. Crie um OAuth 2.0 Client ID do tipo "Aplicativo da Web"  
      <img src="assets/calendar_credentials.png" alt="Credenciais do Google Calendar" width="400px"><br>
      <img src="assets/calendar_web_creds.png" alt="Credenciais Web App" width="400px"> 
-  4. Baixe o arquivo `credentials.json`
-  5. Coloque o arquivo `credentials.json` na pasta `services` do projeto.
+  5. Baixe o arquivo `credentials.json`
+  6. Coloque o arquivo `credentials.json` na pasta `services` do projeto.
 
 
 - Configuração da API do Google Gemini: É necessário criar sua própria API Key para acessar a LLM do Google Gemini.
